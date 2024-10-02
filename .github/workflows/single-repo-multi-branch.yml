@@ -14,7 +14,7 @@ jobs:
       - name: Checkout main branch
         uses: actions/checkout@v3
         with:
-          ref: main  # Check out the main branch
+          # ref: main  # Check out the main branch
           token: ${{ secrets.USER_TOKEN }}
           fetch-depth: 5
 
@@ -89,7 +89,7 @@ jobs:
           git branch -a
           git branch -r
           git checkout origin/L10NStagingRepoSpecific 
-          git pull main
+          git pull origin/main
           git push origin L10NStagingRepoSpecific
 
           # Create PR using GitHub CLI
@@ -105,7 +105,7 @@ jobs:
           git branch -a
           git branch -r
           git checkout origin/L10NStagingRepoSpecific 
-          git pull main
+          git pull origin/main
           git push origin L10NStagingRepoSpecific
 
           # Create PR using GitHub CLI
