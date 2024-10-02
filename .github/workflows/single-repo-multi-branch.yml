@@ -53,10 +53,25 @@ jobs:
             echo "::set-output name=branch_exists::false"
           fi
 
+      # Check for existing PR from L10NStagingRepoSpecific to L10NStaging
+      - name: Check if PR exists from L10NStagingRepoSpecific to L10NStaging
+        id: check_pr_exists
+        run: |
+          # Use gh CLI to check for an existing open PR
+          PR_EXISTS=$(gh pr list --base L10NStaging --head L10NStagingRepoSpecific --state open --json number --jq '.[0].number')
+          if [ -z "$PR_EXISTS" ]; then
+            echo "No existing PR found."
+            echo "::set-output name=pr_exists::false"
+          else
+            echo "PR already exists: $PR_EXISTS"
+            echo "::set-output name=pr_exists::true"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.USER_TOKEN }}
 
       # Create new branch and PR if changes are found
       - name: Create branch and PR
-        if: steps.check_branch.outputs.branch_exists == 'false' && steps.check_changes.outputs.has_changes == 'true'
+        if: steps.check_changes.outputs.has_changes == 'true' && steps.check_branch.outputs.branch_exists == 'false' &&  steps.check_pr_exists.outputs.pr_exists == 'false'
         run: |
           git checkout -b L10NStagingRepoSpecific main
           git push origin L10NStagingRepoSpecific
@@ -66,10 +81,24 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.USER_TOKEN }}
 
-      # Update the branch if it exists and changes are found
+      # Update the branch if it exists and changes are found and branch found
       - name: Update branch and PR
-        if: steps.check_branch.outputs.branch_exists == 'true' && steps.check_changes.outputs.has_changes == 'true'
+        if: steps.check_changes.outputs.has_changes == 'true' && steps.check_branch.outputs.branch_exists == 'true' && steps.check_pr_exists.outputs.pr_exists == 'true'
         run: |
+          git fetch --all
+          git checkout L10NStagingRepoSpecific main
+          git push origin L10NStagingRepoSpecific
+
+          # Create PR using GitHub CLI
+          # gh pr create --title "Sync L10NStagingRepoSpecific" --body "Changes detected in main branch and synced with L10NStaging." --base L10NStaging --head L10NStagingRepoSpecific
+        env:
+          GITHUB_TOKEN: ${{ secrets.USER_TOKEN }}
+
+      # Update the branch if it exists and changes are found and branch found
+      - name: Update branch and PR
+        if: steps.check_changes.outputs.has_changes == 'true' && steps.check_branch.outputs.branch_exists == 'true' && steps.check_pr_exists.outputs.pr_exists == 'false'
+        run: |
+          git fetch --all
           git checkout L10NStagingRepoSpecific main
           git push origin L10NStagingRepoSpecific
 
