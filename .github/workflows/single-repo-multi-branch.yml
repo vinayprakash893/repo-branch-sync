@@ -40,11 +40,36 @@ jobs:
             echo "::set-output name=has_changes::true"
           fi
 
+      - name: Check if L10NStagingRepoSpecific branch exists
+        id: check_branch
+        run: |
+          cd dev
+          if git ls-remote --exit-code --heads origin L10NStagingRepoSpecific; then
+            echo "Branch exists"
+            echo "::set-output name=branch_exists::true"
+          else
+            echo "Branch does not exist"
+            echo "::set-output name=branch_exists::false"
+          fi
+
+
       # Create new branch and PR if changes are found
       - name: Create branch and PR
-        if: steps.check_changes.outputs.has_changes == 'true'
+        if: steps.check_branch.outputs.branch_exists == 'false' && steps.check_changes.outputs.has_changes == 'true'
         run: |
           git checkout -b L10NStagingRepoSpecific dev
+          git push origin L10NStagingRepoSpecific
+
+          # Create PR using GitHub CLI
+          gh pr create --title "Sync L10NStagingRepoSpecific" --body "Changes detected in dev branch and synced with L10NStaging." --base L10NStaging --head L10NStagingRepoSpecific
+        env:
+          GITHUB_TOKEN: ${{ secrets.USER_TOKEN }}
+
+      # Update the branch if it exists and changes are found
+      - name: Update branch and PR
+        if: steps.check_branch.outputs.branch_exists == 'true' && steps.check_changes.outputs.has_changes == 'true'
+        run: |
+          git checkout L10NStagingRepoSpecific dev
           git push origin L10NStagingRepoSpecific
 
           # Create PR using GitHub CLI
