@@ -99,6 +99,7 @@ jobs:
         if: steps.check_changes.outputs.has_changes == 'true' && steps.check_branch.outputs.branch_exists == 'true' && steps.check_pr_exists.outputs.pr_exists == 'false'
         run: |
           git fetch --all
+          git branch -a
           git checkout origin/L10NStagingRepoSpecific main
           git push origin L10NStagingRepoSpecific
 
