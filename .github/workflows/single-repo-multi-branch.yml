@@ -15,7 +15,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           # ref: main  # Check out the main branch
-          token: ${{ secrets.USER_TOKEN }}
+          # token: ${{ secrets.USER_TOKEN }}
           fetch-depth: 5
 
       # Set up Git
@@ -67,8 +67,8 @@ jobs:
             echo "PR already exists: Matching #$PR_EXISTS"
             echo "::set-output name=pr_exists::true"
           fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.USER_TOKEN }}
+        # env:
+        #   GITHUB_TOKEN: ${{ secrets.USER_TOKEN }}
 
       - name: Create branch and Create PR
         if: steps.check_changes.outputs.has_changes == 'true' && steps.check_branch.outputs.branch_exists == 'false' &&  steps.check_pr_exists.outputs.pr_exists == 'false'
@@ -76,8 +76,8 @@ jobs:
           git checkout -b L10NStagingRepoSpecific main
           git push origin L10NStagingRepoSpecific
           gh pr create --title "Sync L10NStagingRepoSpecific" --body "Changes detected in main branch and synced with L10NStaging." --base L10NStaging --head L10NStagingRepoSpecific
-        env:
-          GITHUB_TOKEN: ${{ secrets.USER_TOKEN }}
+        # env:
+        #   GITHUB_TOKEN: ${{ secrets.USER_TOKEN }}
 
       # Update the branch if it exists and changes are found and branch found
       - name: Update branch and Update PR
@@ -87,8 +87,8 @@ jobs:
           git checkout -b L10NStagingRepoSpecific origin/L10NStagingRepoSpecific
           git pull origin main
           git push origin L10NStagingRepoSpecific
-        env:
-          GITHUB_TOKEN: ${{ secrets.USER_TOKEN }}
+        # env:
+        #   GITHUB_TOKEN: ${{ secrets.USER_TOKEN }}
 
       # Update the branch if it exists and changes are found and branch found
       - name: Update branch and Create PR
@@ -99,8 +99,8 @@ jobs:
           git pull origin main
           git push origin L10NStagingRepoSpecific
           gh pr create --title "Sync L10NStagingRepoSpecific" --body "Changes detected in main branch and synced with L10NStaging." --base L10NStaging --head L10NStagingRepoSpecific
-        env:
-          GITHUB_TOKEN: ${{ secrets.USER_TOKEN }}
+        # env:
+        #   GITHUB_TOKEN: ${{ secrets.USER_TOKEN }}
 
       # # Optional: Clean up branches
       # - name: Clean up
