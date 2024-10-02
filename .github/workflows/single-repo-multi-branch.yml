@@ -83,6 +83,7 @@ jobs:
       - name: Update branch and Update PR
         if: steps.check_changes.outputs.has_changes == 'true' && steps.check_branch.outputs.branch_exists == 'true' && steps.check_pr_exists.outputs.pr_exists == 'true'
         run: |
+          git fetch --all
           git checkout -b L10NStagingRepoSpecific origin/L10NStagingRepoSpecific
           git pull origin main
           git push origin L10NStagingRepoSpecific
@@ -93,6 +94,7 @@ jobs:
       - name: Update branch and Create PR
         if: steps.check_changes.outputs.has_changes == 'true' && steps.check_branch.outputs.branch_exists == 'true' && steps.check_pr_exists.outputs.pr_exists == 'false'
         run: |
+          git fetch --all
           git checkout -b L10NStagingRepoSpecific origin/L10NStagingRepoSpecific
           git pull origin main
           git push origin L10NStagingRepoSpecific
