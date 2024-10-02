@@ -69,8 +69,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.USER_TOKEN }}
 
-      # Create new branch and PR if changes are found
-      - name: Create branch and PR
+      - name: Create branch and Create PR
         if: steps.check_changes.outputs.has_changes == 'true' && steps.check_branch.outputs.branch_exists == 'false' &&  steps.check_pr_exists.outputs.pr_exists == 'false'
         run: |
           git checkout -b L10NStagingRepoSpecific main
@@ -82,11 +81,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.USER_TOKEN }}
 
       # Update the branch if it exists and changes are found and branch found
-      - name: Update branch and PR
+      - name: Update branch and Update PR
         if: steps.check_changes.outputs.has_changes == 'true' && steps.check_branch.outputs.branch_exists == 'true' && steps.check_pr_exists.outputs.pr_exists == 'true'
         run: |
           git fetch --all
-          git checkout L10NStagingRepoSpecific main
+          git checkout origin/L10NStagingRepoSpecific main
           git push origin L10NStagingRepoSpecific
 
           # Create PR using GitHub CLI
@@ -95,11 +94,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.USER_TOKEN }}
 
       # Update the branch if it exists and changes are found and branch found
-      - name: Update branch and PR
+      - name: Update branch and Create PR
         if: steps.check_changes.outputs.has_changes == 'true' && steps.check_branch.outputs.branch_exists == 'true' && steps.check_pr_exists.outputs.pr_exists == 'false'
         run: |
           git fetch --all
-          git checkout L10NStagingRepoSpecific main
+          git checkout origin/L10NStagingRepoSpecific main
           git push origin L10NStagingRepoSpecific
 
           # Create PR using GitHub CLI
