@@ -52,8 +52,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.USER_TOKEN }}
 
-      # Optional: Clean up branches
-      - name: Clean up
-        run: |
-          git branch -d L10NStaging
-          git branch -d L10NStagingRepoSpecific
+      # # Optional: Clean up branches
+      # - name: Clean up
+      #   run: |
+      #     git branch -d L10NStaging
+      #     git branch -d L10NStagingRepoSpecific
