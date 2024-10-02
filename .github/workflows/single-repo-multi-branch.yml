@@ -14,7 +14,7 @@ jobs:
       - name: Checkout main branch
         uses: actions/checkout@v3
         with:
-          # ref: main  # Check out the main branch
+          ref: main  # Check out the main branch
           token: ${{ secrets.USER_TOKEN }}
           fetch-depth: 5
 
@@ -86,7 +86,7 @@ jobs:
         if: steps.check_changes.outputs.has_changes == 'true' && steps.check_branch.outputs.branch_exists == 'true' && steps.check_pr_exists.outputs.pr_exists == 'true'
         run: |
           git fetch --all
-          git checkout origin/L10NStagingRepoSpecific origin/main
+          git checkout origin/L10NStagingRepoSpecific main
           git push origin L10NStagingRepoSpecific
 
           # Create PR using GitHub CLI
@@ -100,6 +100,7 @@ jobs:
         run: |
           git fetch --all
           git branch -a
+          git branch -r
           git checkout origin/L10NStagingRepoSpecific main
           git push origin L10NStagingRepoSpecific
 
