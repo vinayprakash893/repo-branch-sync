@@ -1,0 +1,110 @@
+name: main-multip-repo
+
+on:
+  # push:
+  #   branches:
+  #     - main  # Or the branch you want to track
+  workflow_dispatch:  # Enables manual triggering of the workflow
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the primary repository
+      - name: Checkout primary repository
+        uses: actions/checkout@v3
+        with:
+          # repository: your-primary-repo-owner/your-primary-repo-name
+          path: L10NStaging
+          ref: main  # Update with the branch you are working with
+          # token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Checkout the secondary repository
+      - name: Checkout secondary repository or second branch
+        uses: actions/checkout@v3
+        with:
+          # repository: your-secondary-repo-owner/your-secondary-repo-name
+          path: L10NStagingRepoSpecific
+          ref: main  # Update with the branch you are working with
+          # token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Set up Git
+      - name: Set up Git
+        run: |
+          git config --global user.email "your-email@example.com"
+          git config --global user.name "GitHub Action Bot"
+
+      # Check if the branch exists in the secondary repository
+      - name: Check if L10NStagingRepoSpecific branch exists
+        id: check_branch
+        run: |
+          cd L10NStaging
+          if git ls-remote --exit-code --heads origin L10NStagingRepoSpecific; then
+            echo "Branch exists"
+            echo "::set-output name=branch_exists::true"
+          else
+            echo "Branch does not exist"
+            echo "::set-output name=branch_exists::false"
+          fi
+
+      # Check for local changes in the primary repository
+      - name: Check for local changes
+        id: check_changes
+        run: |
+          cd L10NStaging
+          if git diff-index --quiet HEAD --; then
+            echo "No changes"
+            echo "::set-output name=has_changes::false"
+          else
+            echo "Changes found"
+            echo "::set-output name=has_changes::true"
+          fi
+
+      # Create the branch and PR if it doesn't exist and changes are found
+      - name: Create branch and PR
+        if: steps.check_branch.outputs.branch_exists == 'false' && steps.check_changes.outputs.has_changes == 'true'
+        run: |
+          cd L10NStaging
+          git checkout -b L10NStagingRepoSpecific
+          git add .
+          git commit -m "Sync changes from primary repo"
+          git push origin L10NStagingRepoSpecific
+
+          # Create PR using GitHub CLI
+          gh pr create --title "Sync L10NStagingRepoSpecific branch" --body "New changes from primary repo" --base main --head L10NStagingRepoSpecific
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Update the branch if it exists and changes are found
+      - name: Update branch and PR
+        if: steps.check_branch.outputs.branch_exists == 'true' && steps.check_changes.outputs.has_changes == 'true'
+        run: |
+          cd L10NStaging
+          git checkout L10NStagingRepoSpecific
+          git pull origin L10NStaging
+          git add .
+          git commit -m "Update L10NStagingRepoSpecific branch with new changes"
+          git push origin L10NStagingRepoSpecific
+
+          # Update PR if it exists
+          if gh pr list --head L10NStagingRepoSpecific; then
+            echo "PR already exists, updating..."
+          else
+            echo "No PR found, creating one..."
+            gh pr create --title "Update L10NStagingRepoSpecific branch" --body "New changes in primary repo" --base main --head L10NStagingRepoSpecific
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Handle case where branch is behind L10NStaging
+      - name: Handle branch behind L10NStaging
+        if: steps.check_branch.outputs.branch_exists == 'true'
+        run: |
+          cd L10NStaging
+          git fetch origin
+          if [ $(git rev-list --count L10NStaging..L10NStagingRepoSpecific) -gt 0 ]; then
+            echo "Branch is behind. Rebasing and updating..."
+            git checkout L10NStagingRepoSpecific
+            git rebase L10NStaging
+            git push --force-with-lease origin L10NStagingRepoSpecific
+          fi

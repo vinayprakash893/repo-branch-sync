@@ -1,0 +1,59 @@
+name: single-repo-multi-branch
+
+on:
+  push:
+    branches:
+      - dev  # Trigger on the dev branch
+  workflow_dispatch:  # Allows manual triggering of the workflow
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the repository (dev branch)
+      - name: Checkout dev branch
+        uses: actions/checkout@v3
+        with:
+          ref: dev  # Check out the dev branch
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Set up Git
+      - name: Set up Git
+        run: |
+          git config --global user.email "Workflow@githubactions.com"
+          git config --global user.name "Github actions"
+
+      # Fetch the L10NStaging branch
+      - name: Fetch L10NStaging branch
+        run: |
+          git fetch origin L10NStaging:L10NStaging
+
+      # Check for differences between dev and L10NStaging
+      - name: Check for changes between dev and L10NStaging
+        id: check_changes
+        run: |
+          if git diff --quiet dev L10NStaging; then
+            echo "No changes between dev and L10NStaging."
+            echo "::set-output name=has_changes::false"
+          else
+            echo "Changes detected between dev and L10NStaging."
+            echo "::set-output name=has_changes::true"
+          fi
+
+      # Create new branch and PR if changes are found
+      - name: Create branch and PR
+        if: steps.check_changes.outputs.has_changes == 'true'
+        run: |
+          git checkout -b L10NStagingRepoSpecific dev
+          git push origin L10NStagingRepoSpecific
+
+          # Create PR using GitHub CLI
+          gh pr create --title "Sync L10NStagingRepoSpecific" --body "Changes detected in dev branch and synced with L10NStaging." --base L10NStaging --head L10NStagingRepoSpecific
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Optional: Clean up branches
+      - name: Clean up
+        run: |
+          git branch -d L10NStaging
+          git branch -d L10NStagingRepoSpecific
