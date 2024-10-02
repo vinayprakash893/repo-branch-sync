@@ -3,18 +3,18 @@ name: single-repo-multi-branch
 on:
   push:
     branches:
-      - dev  # Trigger on the dev branch
+      - main  # Trigger on the main branch
   workflow_dispatch:  # Allows manual triggering of the workflow
 
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      # Checkout the repository (dev branch)
-      - name: Checkout dev branch
+      # Checkout the repository (main branch)
+      - name: Checkout main branch
         uses: actions/checkout@v3
         with:
-          ref: dev  # Check out the dev branch
+          ref: main  # Check out the main branch
           token: ${{ secrets.USER_TOKEN }}
 
       # Set up Git
@@ -28,22 +28,23 @@ jobs:
         run: |
           git fetch origin L10NStaging:L10NStaging
 
-      # Check for differences between dev and L10NStaging
-      - name: Check for changes between dev and L10NStaging
+      # Check for differences between main and L10NStaging
+      - name: Check for changes between main and L10NStaging
         id: check_changes
         run: |
-          if git diff --quiet dev L10NStaging; then
-            echo "No changes between dev and L10NStaging."
+          if git diff --quiet main L10NStaging; then
+            echo "No changes between main and L10NStaging."
             echo "::set-output name=has_changes::false"
           else
-            echo "Changes detected between dev and L10NStaging."
+            echo "Changes detected between main and L10NStaging."
             echo "::set-output name=has_changes::true"
           fi
-
+          
+      # Check for L10NStagingRepoSpecific branch
       - name: Check if L10NStagingRepoSpecific branch exists
         id: check_branch
         run: |
-          cd dev
+          cd main
           if git ls-remote --exit-code --heads origin L10NStagingRepoSpecific; then
             echo "Branch exists"
             echo "::set-output name=branch_exists::true"
@@ -57,11 +58,11 @@ jobs:
       - name: Create branch and PR
         if: steps.check_branch.outputs.branch_exists == 'false' && steps.check_changes.outputs.has_changes == 'true'
         run: |
-          git checkout -b L10NStagingRepoSpecific dev
+          git checkout -b L10NStagingRepoSpecific main
           git push origin L10NStagingRepoSpecific
 
           # Create PR using GitHub CLI
-          gh pr create --title "Sync L10NStagingRepoSpecific" --body "Changes detected in dev branch and synced with L10NStaging." --base L10NStaging --head L10NStagingRepoSpecific
+          gh pr create --title "Sync L10NStagingRepoSpecific" --body "Changes detected in main branch and synced with L10NStaging." --base L10NStaging --head L10NStagingRepoSpecific
         env:
           GITHUB_TOKEN: ${{ secrets.USER_TOKEN }}
 
@@ -69,11 +70,11 @@ jobs:
       - name: Update branch and PR
         if: steps.check_branch.outputs.branch_exists == 'true' && steps.check_changes.outputs.has_changes == 'true'
         run: |
-          git checkout L10NStagingRepoSpecific dev
+          git checkout L10NStagingRepoSpecific main
           git push origin L10NStagingRepoSpecific
 
           # Create PR using GitHub CLI
-          gh pr create --title "Sync L10NStagingRepoSpecific" --body "Changes detected in dev branch and synced with L10NStaging." --base L10NStaging --head L10NStagingRepoSpecific
+          gh pr create --title "Sync L10NStagingRepoSpecific" --body "Changes detected in main branch and synced with L10NStaging." --base L10NStaging --head L10NStagingRepoSpecific
         env:
           GITHUB_TOKEN: ${{ secrets.USER_TOKEN }}
 
