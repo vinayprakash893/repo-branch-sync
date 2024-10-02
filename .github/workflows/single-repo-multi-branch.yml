@@ -16,6 +16,7 @@ jobs:
         with:
           # ref: main  # Check out the main branch
           token: ${{ secrets.USER_TOKEN }}
+          fetch-depth: 5
 
       # Set up Git
       - name: Set up Git
@@ -72,7 +73,7 @@ jobs:
       - name: Create branch and Create PR
         if: steps.check_changes.outputs.has_changes == 'true' && steps.check_branch.outputs.branch_exists == 'false' &&  steps.check_pr_exists.outputs.pr_exists == 'false'
         run: |
-          git checkout -b L10NStagingRepoSpecific origin/main
+          git checkout -b L10NStagingRepoSpecific main
           git push origin L10NStagingRepoSpecific
 
           # Create PR using GitHub CLI
