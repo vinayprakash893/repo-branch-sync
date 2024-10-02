@@ -75,8 +75,6 @@ jobs:
         run: |
           git checkout -b L10NStagingRepoSpecific main
           git push origin L10NStagingRepoSpecific
-
-          # Create PR using GitHub CLI
           gh pr create --title "Sync L10NStagingRepoSpecific" --body "Changes detected in main branch and synced with L10NStaging." --base L10NStaging --head L10NStagingRepoSpecific
         env:
           GITHUB_TOKEN: ${{ secrets.USER_TOKEN }}
@@ -85,15 +83,9 @@ jobs:
       - name: Update branch and Update PR
         if: steps.check_changes.outputs.has_changes == 'true' && steps.check_branch.outputs.branch_exists == 'true' && steps.check_pr_exists.outputs.pr_exists == 'true'
         run: |
-          git fetch --all
-          git branch -a
-          git branch -r
           git checkout -b L10NStagingRepoSpecific origin/L10NStagingRepoSpecific
           git pull origin main
           git push origin L10NStagingRepoSpecific
-
-          # Create PR using GitHub CLI
-          # gh pr create --title "Sync L10NStagingRepoSpecific" --body "Changes detected in main branch and synced with L10NStaging." --base L10NStaging --head L10NStagingRepoSpecific
         env:
           GITHUB_TOKEN: ${{ secrets.USER_TOKEN }}
 
@@ -101,14 +93,9 @@ jobs:
       - name: Update branch and Create PR
         if: steps.check_changes.outputs.has_changes == 'true' && steps.check_branch.outputs.branch_exists == 'true' && steps.check_pr_exists.outputs.pr_exists == 'false'
         run: |
-          git fetch --all
-          git branch -a
-          git branch -r
           git checkout -b L10NStagingRepoSpecific origin/L10NStagingRepoSpecific
           git pull origin main
           git push origin L10NStagingRepoSpecific
-
-          # Create PR using GitHub CLI
           gh pr create --title "Sync L10NStagingRepoSpecific" --body "Changes detected in main branch and synced with L10NStaging." --base L10NStaging --head L10NStagingRepoSpecific
         env:
           GITHUB_TOKEN: ${{ secrets.USER_TOKEN }}
