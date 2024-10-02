@@ -14,7 +14,7 @@ jobs:
       - name: Checkout main branch
         uses: actions/checkout@v3
         with:
-          ref: main  # Check out the main branch
+          # ref: main  # Check out the main branch
           token: ${{ secrets.USER_TOKEN }}
 
       # Set up Git
@@ -44,7 +44,7 @@ jobs:
       - name: Check if L10NStagingRepoSpecific branch exists
         id: check_branch
         run: |
-          cd main
+          # cd main
           if git ls-remote --exit-code --heads origin L10NStagingRepoSpecific; then
             echo "Branch exists"
             echo "::set-output name=branch_exists::true"
