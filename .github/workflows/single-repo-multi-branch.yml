@@ -64,7 +64,7 @@ jobs:
             echo "No existing PR found."
             echo "::set-output name=pr_exists::false"
           else
-            echo "PR already exists: $PR_EXISTS"
+            echo "PR already exists: Matching #$PR_EXISTS"
             echo "::set-output name=pr_exists::true"
           fi
         env:
@@ -99,7 +99,7 @@ jobs:
         if: steps.check_changes.outputs.has_changes == 'true' && steps.check_branch.outputs.branch_exists == 'true' && steps.check_pr_exists.outputs.pr_exists == 'false'
         run: |
           git fetch --all
-          git checkout origin/L10NStagingRepoSpecific origin/main
+          git checkout origin/L10NStagingRepoSpecific main
           git push origin L10NStagingRepoSpecific
 
           # Create PR using GitHub CLI
