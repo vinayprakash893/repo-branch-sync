@@ -88,8 +88,8 @@ jobs:
           git fetch --all
           git branch -a
           git branch -r
-          git checkout origin/L10NStagingRepoSpecific 
-          git pull origin/main
+          git checkout -b L10NStagingRepoSpecific origin/L10NStagingRepoSpecific
+          git pull origin main
           git push origin L10NStagingRepoSpecific
 
           # Create PR using GitHub CLI
@@ -104,8 +104,8 @@ jobs:
           git fetch --all
           git branch -a
           git branch -r
-          git checkout origin/L10NStagingRepoSpecific 
-          git pull origin/main
+          git checkout -b L10NStagingRepoSpecific origin/L10NStagingRepoSpecific
+          git pull origin main
           git push origin L10NStagingRepoSpecific
 
           # Create PR using GitHub CLI
